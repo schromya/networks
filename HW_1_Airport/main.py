@@ -1,17 +1,21 @@
+from AirportsMap import AirportsMap
+from time import sleep
 
 
 
 def main():
-    IATA_port_mapping = {
-        "ANC":8080,
-        "SEA":8081,
-        "FAE":8082,
-        "BRW":8083,
-        "OTZ":8084
-    }
+    airports =AirportsMap()
+    airports.SEA.receive_passengers()
+    airports.ANC.receive_passengers()
+
+    for i in range(3):
+        airports.SEA.send_passenger(airports.ANC, "Hello " + str(i))
+        airports.ANC.send_passenger(airports.SEA, "Hello " + str(i))
+        sleep(0.5)
+
+    del airports
     
-    pass
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     main()

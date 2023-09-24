@@ -1,0 +1,1 @@
+Citations: talked to Jaren Ramirez about this hw. He borrowed my multi-threading idea and I liked his idea about representing this physically in tkinter or other GUI.
