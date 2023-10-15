@@ -1,0 +1,1 @@
+2023-10-15 14:37:54.815395 | Passenger: 0, Flight 0 | FAI -> ANC -> BRW

@@ -1,27 +1,39 @@
 import socket 
-from enum import Enum
+import datetime
 import threading
+import os
+import json
 
 class Airport:
 
     
-    def __init__(self, name:str, IATA:str, port:int, IS_HUB:bool) -> None:
-        self.name = name
+    def __init__(self, location:str, IATA:str, port:int, IS_HUB:bool) -> None:
+        self.location = location
         self.IATA = IATA
         self.port = port
         self.IS_HUB = IS_HUB
 
         self.connected_airports = []
- 
+        self.server_socket = None
+        
+        # Create logs folder 
+        if not os.path.exists("logs"):
+            os.makedirs("logs")
+        
+        self.log_file = "logs/" + self.IATA + "_log.txt"
+
+        # Clear log file if it exists
+        with open(self.log_file, 'w') as f:
+            f.write("")
 
 
     def __del__(self):
         # Close server when class is destroyed
 
         # TODO: get this working
-        print("here")
+        #print("here")
         if (self.server_socket):
-            print("Closing", self.name, "server")
+            print("Closing", self.location, "server")
             self.server_socket.close()
 
 
@@ -44,7 +56,7 @@ class Airport:
                 client_socket, client_address = self.server_socket.accept()
                 data = client_socket.recv(1024)
                 if data:
-                    print(self.name, "received data:", data.decode())
+                    print(self.location, "received data:", data.decode())
                     self.process_passenger(data.decode())
                     client_socket.close()
 
@@ -54,25 +66,65 @@ class Airport:
 
 
 
-    def process_passenger(self, message:str) -> None:
-        pass
+    def process_passenger(self, message:json) -> None:
+        '''
+        Logs the passenger and determines if this is the passengers final destination of the 
+        passenger. If not, sends it to its next destination.
+        :message JSON string with the passenger message.
+        '''
+        self.log_passenger(message)
+        message_dict = json.loads(message)
 
-    def send_passenger(self, destination:"Airport", message) -> None:
+        # Find index of current location
+        curr_location_idx = 0
+        for i, airport in enumerate(message_dict["flight_path"]):
+            if airport[1] == self.IATA:
+                curr_location_idx = i
+                break
+
+        # Destination
+        if curr_location_idx == len (message_dict["flight_path"]) - 1:
+            return
+        
+        # Send to next airport
+        self.send_passenger(message_dict["flight_path"][i+1][0], message)
+        
+
+
+    def send_passenger(self, destination:"Airport.port", message) -> None:
         """
         Acts as a client to send a passenger to their destination (TCP message).
         :param destination
         """
 
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_address = ('localhost', destination.port)
+        server_address = ('localhost', destination)
         client_socket.connect(server_address)
 
-        print(self.name, "sending data to:{}".format(server_address))
+        print(self.location, "sending data to:{}".format(server_address))
         client_socket.sendall(message.encode())
 
-        # data = client_socket.recv(1024)
-        # print("Received from server: {}".format(data.decode()))
 
 
-    def log_passenger(message):
+    def log_passenger(self, message:json):
+        """
+        Logs passenger details.
+        :param message  JSON string message for the passenger.
+        """
+        message = json.loads(message)
+
+        timestamp =  str(datetime.datetime.now())
+
+        airport_path = ""
+        for i, airport in enumerate(message['flight_path']):
+            airport_path += message['flight_path'][i][1]
+
+            if i < len(message['flight_path']) - 1:
+                airport_path += " -> "
+
+
+        log_str = f"{timestamp} | Passenger: {message['passenger']}, Flight {message['flight']} | {airport_path}\n"
+        
+        with open(self.log_file, 'w') as f:
+            f.write(log_str)
         pass
