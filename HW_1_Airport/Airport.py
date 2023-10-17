@@ -140,7 +140,6 @@ class Airport:
         timestamp =  str(datetime.datetime.now())
 
         flight_path_str = '->'.join([x["IATA"] for x in message_dict["flight_path"]])
-
         log_str = f"{timestamp} | {log_str} Passenger: {message_dict['passenger']}, Flight {message_dict['flight']} | {flight_path_str}\n"
         
         with open(self.log_file, 'a') as f:

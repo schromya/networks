@@ -126,7 +126,7 @@ class AirportsMap:
 
 
         flight_path_str = '->'.join([x.IATA for x in flight_path])
-        print(f"Flight {self.flight_number}: {flight_path_str}")
+        print(f"Flight {self.flight_number}: {flight_path_str} | {number_passengers} Passengers")
 
         self.flight_number += 1
         

@@ -17,7 +17,7 @@ def main():
     print(f"Generating {NUMBER_FLIGHTS} flights...\n")
     for _ in range(NUMBER_FLIGHTS):
         time.sleep(0.5)
-        source, passenger_messages = airports.generate_flight(NUMBER_PASSENGERS)
+        source, passenger_messages = airports.generate_flight() 
 
         # Send each passenger from the source airport
         for message in passenger_messages:
