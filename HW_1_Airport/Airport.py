@@ -29,12 +29,16 @@ class Airport:
 
     def __del__(self):
         # Close server when class is destroyed
-
-        # TODO: get this working
-        #print("here")
         if (self.server_socket):
-            print("Closing", self.location, "server")
             self.server_socket.close()
+
+    def to_dict(self):
+        return {
+        "location" : self.location,
+        "IATA" : self.IATA,
+        "port" : self.port,
+        "IS_HUB" :self.IS_HUB,
+        }
 
 
     def receive_passengers(self) -> None:
@@ -48,7 +52,7 @@ class Airport:
         server_address = ('localhost', self.port)
         self.server_socket.bind(server_address)
         self.server_socket.listen(len(self.connected_airports))  # Clients = connected airports
-        print("Server is listening on {}:{}".format(*server_address))
+
 
         def listen(self):
             # TODO: Figure out how to stop thread and close socket affectively
@@ -56,9 +60,10 @@ class Airport:
                 client_socket, client_address = self.server_socket.accept()
                 data = client_socket.recv(1024)
                 if data:
-                    print(self.location, "received data:", data.decode())
+                    self.log_passenger(data.decode(), RECEIVED=True)
                     self.process_passenger(data.decode())
                     client_socket.close()
+                    
 
         # Thread is daemon to exit when the program exits
         server_thread = threading.Thread(target=listen, args=[self], daemon=True)
@@ -72,22 +77,22 @@ class Airport:
         passenger. If not, sends it to its next destination.
         :message JSON string with the passenger message.
         '''
-        self.log_passenger(message)
         message_dict = json.loads(message)
 
         # Find index of current location
         curr_location_idx = 0
         for i, airport in enumerate(message_dict["flight_path"]):
-            if airport[1] == self.IATA:
+            if airport["IATA"] == self.IATA:
                 curr_location_idx = i
                 break
 
         # Destination
         if curr_location_idx == len (message_dict["flight_path"]) - 1:
+            self.log_passenger(message, FINAL_DESTINATION=True)
             return
         
         # Send to next airport
-        self.send_passenger(message_dict["flight_path"][i+1][0], message)
+        self.send_passenger(message_dict["flight_path"][i+1]["port"], message)
         
 
 
@@ -96,35 +101,48 @@ class Airport:
         Acts as a client to send a passenger to their destination (TCP message).
         :param destination
         """
-
+        self.log_passenger(message, SENDING=True)
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_address = ('localhost', destination)
         client_socket.connect(server_address)
 
-        print(self.location, "sending data to:{}".format(server_address))
         client_socket.sendall(message.encode())
 
 
 
-    def log_passenger(self, message:json):
+    def log_passenger(self, message:json, RECEIVED:bool = False, SENDING:bool = False, FINAL_DESTINATION = False):
         """
         Logs passenger details.
         :param message  JSON string message for the passenger.
+        :param RECEIVED Logs message for when passenger is received by the airport.
+        :param SENDING Logs message for when passenger is sent by the airport.
+        :param SENDING Logs message for when passenger has arrived at final destination.
         """
-        message = json.loads(message)
+
+
+        message_dict = json.loads(message)
+
+        # Find index of current location
+        curr_idx = 0
+        for i, airport in enumerate(message_dict["flight_path"]):
+            if airport["IATA"] == self.IATA:
+                curr_idx = i
+                break
+        
+        log_str = ""
+        if RECEIVED:
+            log_str = f"FROM {message_dict['flight_path'][curr_idx]['IATA']} RECEIVED"
+        elif SENDING:
+            log_str = f"TO {message_dict['flight_path'][curr_idx + 1]['IATA']} SENDING"
+        elif FINAL_DESTINATION:
+            log_str = f"FINAL DESTINATION OF"
 
         timestamp =  str(datetime.datetime.now())
 
-        airport_path = ""
-        for i, airport in enumerate(message['flight_path']):
-            airport_path += message['flight_path'][i][1]
+        flight_path_str = '->'.join([x["IATA"] for x in message_dict["flight_path"]])
 
-            if i < len(message['flight_path']) - 1:
-                airport_path += " -> "
-
-
-        log_str = f"{timestamp} | Passenger: {message['passenger']}, Flight {message['flight']} | {airport_path}\n"
+        log_str = f"{timestamp} | {log_str} Passenger: {message_dict['passenger']}, Flight {message_dict['flight']} | {flight_path_str}\n"
         
-        with open(self.log_file, 'w') as f:
+        with open(self.log_file, 'a') as f:
             f.write(log_str)
         pass

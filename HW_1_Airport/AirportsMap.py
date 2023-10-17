@@ -1,5 +1,6 @@
 from Airport import Airport
 import random
+import json
 
 class AirportsMap:
     """
@@ -49,6 +50,8 @@ class AirportsMap:
         self.FAI.connected_airports = [self.ANC, self.SEA]
 
         self.airports = [self.SEA, self.ANC, self.OTZ, self.BRW, self.FAI]
+
+        self.flight_number = 0
         
 
     def generate_flight_path(self, source:Airport = None, destination:Airport = None) -> list[Airport]:
@@ -65,7 +68,7 @@ class AirportsMap:
         if (not destination):
             destination = self.get_random_airport(excluded_airport=source)
 
-        print("~~~~~", source.IATA, destination.IATA)
+        
         def traverse_path(curr_airport:Airport, prev_airports:list[Airport]):
             prev_airports = prev_airports + [curr_airport] # Creates a copy of the list
             if curr_airport == destination:
@@ -94,10 +97,40 @@ class AirportsMap:
         return random.choice(airport_choices)
 
 
+    def generate_flight(self, number_passengers:int = None) -> (Airport, json):
+        """
+        Creates a message for each passenger on the flight.
+        :number_passengers  (optional) If the number isn't passed, produces a random  number
+                                            of either 100, 200, ..., 800
+        :return    The source airport and a List of JSON string that represents each passenger.
+        """
+        passenger_number = 0
+        # Generates between 100 and 800 passengers
+        if (not number_passengers):
+            number_passengers = random.randint(1, 8) * 100
+        
 
-    def __del__(self):
-        #print("Deleting")
-        del self.SEA
-        del self.ANC
+        flight_path = self.generate_flight_path()
+        serialized_flight_path = [x.to_dict() for x in  flight_path]
+        passenger_messages = []
+
+        for _ in range (number_passengers):
+            message = {
+                "flight": self.flight_number,
+                "passenger": passenger_number,
+                "flight_path": serialized_flight_path
+            }
+            passenger_messages.append(json.dumps(message))
+
+            passenger_number += 1
+
+
+        flight_path_str = '->'.join([x.IATA for x in flight_path])
+        print(f"Flight {self.flight_number}: {flight_path_str}")
+
+        self.flight_number += 1
+        
+
+        return flight_path[0], passenger_messages
 
 

@@ -1,37 +1,28 @@
 from AirportsMap import AirportsMap
-from Messages import Messages
 import time
 
 
 
 def main():
-
-
     airports = AirportsMap()
-    messages = Messages()
 
-
-
-    source, messages = messages.generate_flight(1)
-
-    # print(source.IATA)
-
-    # for message in messages:
-    #     print(message)
-
+    # Get Airports ready to receive passengers (receive passengers)
     for airport in airports.airports:
         airport.receive_passengers()
-    
 
+    # Generate 20 flights with 100 passengers each
+    NUMBER_FLIGHTS = 20
+    NUMBER_PASSENGERS = 100
 
-    for message in messages:
-        source.process_passenger(message)
-        #process_pase(airports.ANC, "Hello " + str(i))
-        #airports.ANC.send_passenger(airports.SEA, "Hello " + str(i))
+    print(f"Generating {NUMBER_FLIGHTS} flights...\n")
+    for _ in range(NUMBER_FLIGHTS):
         time.sleep(0.5)
+        source, passenger_messages = airports.generate_flight(NUMBER_PASSENGERS)
 
-    # del airports
-    
+        # Send each passenger from the source airport
+        for message in passenger_messages:
+            source.process_passenger(message)
+        
 
 
 if __name__ == "__main__":
