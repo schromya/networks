@@ -10,7 +10,7 @@ This program contains an `Airport` class that contains:
 * and a function for logging the passenger.
 
 This program also contains an `AirportMap` class that contains:
-* 5 initialized Airports (ANC, BRW, FAI, OTZ, SEA) with their corresponding information,
+* 5 initialized airports (ANC, BRW, FAI, OTZ, SEA) that contain their corresponding information,
 * a function for selecting a random airport,
 * a function for generating a path between 2 airports, through the layover network using depth-first-search.
 * and a function for creating a flight between 2 random destination, with a random number of passengers (either 100, 200...900). Each passenger has their own message that contains the flight number, passenger number, and flight path.
@@ -43,23 +43,20 @@ Flight 17: FAI->ANC | 500 Passengers
 Flight 18: ANC->FAI->SEA | 300 Passengers
 Flight 19: BRW->ANC->FAI->SEA | 600 Passengers
 ```
+
 # Scalability
 This program can be scaled easily by just initializing more airports in `AirportsMap`. All the other logic will work the same. You can also easily create more random flights by adjusting the `NUMBER_FLIGHTS` variable in main and control the number of passengers per flight by passing an integer to `airports.generate_flight()`
 
 
 # Comparison to Internet Traffic
-In this simulation, each airport can be compared to a router, which is sending internet traffic (i.e) passengers to it's final destination. Additionally, airports, are like internet hub-and-spoke topology where the major/international airports are hubs (i.e. Internet Exchange Points) and the regional airports ara the spokes (i.e. the smaller local networks).
+In this simulation, each airport can be compared to a router, which is sending internet traffic (i.e) passengers to it's final destination. Additionally, airport topology is like internet hub-and-spoke topology where the major/international airports are hubs (i.e. Internet Exchange Points) and the regional airports ara the spokes (i.e. the smaller local networks). Additionally, mapping the airport IATA to the PORT is like mapping an internet IP to a domain name in DNS.
 
+However, at some points my simulation breaks down when compared to the current internet. For example, right now before the program sends a message/passenger, I pre-generate a flight path. While this is how an airline does it, this is not how the internet does it. Instead a message has a final destination and routers determine how best to get it there.
 
-Additionally, mapping the airport IATA to the PORT is like mapping an internet IP to a domain name in DNS.
-
-However, at some points my simulation breaks down a bit from the current internet. For example, right now before the program sends a message/passenger, I pre-generate a flight path. While this is how an airline does it, this is not how the internet does it. Instead a message has a final destination and routers determine how best to get it there.
-
-Through this exercise, I have gotten to experience what it's like to build a network and have been able tto see some of the challenges that networks face.
+Through this exercise, I have gotten to experience what it's like to build a network and have been able to see some of the challenges that networks face. It was interesting to see that an airport has to be a server and client simultaneously.
 
 
 # Citations
-
 * I talked to Jaren Ramirez about this homework. He borrowed my multi-threading idea and I liked his idea about representing this physically in tkinter or other GUI. However, I did not end up creating a GUI for this assignment.
 * I used ChatGPT to debug my path finding and also to serialize the airport classes (i.e. turn them into a dictionary) so I could pass them as JSON objects.
 * I also used the following sources to remember certain python functionality:
