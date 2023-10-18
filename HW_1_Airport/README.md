@@ -12,7 +12,7 @@ This program contains an `Airport` class that contains:
 This program also contains an `AirportMap` class that contains:
 * 5 initialized airports (ANC, BRW, FAI, OTZ, SEA) that contain their corresponding information,
 * a function for selecting a random airport,
-* a function for generating a path between 2 airports, through the layover network using depth-first-search.
+* a function for generating a path between 2 airports, through the layover network using depth-first-search,
 * and a function for creating a flight between 2 random destination, with a random number of passengers (either 100, 200...900). Each passenger has their own message that contains the flight number, passenger number, and flight path.
 
 ### When main is run...
